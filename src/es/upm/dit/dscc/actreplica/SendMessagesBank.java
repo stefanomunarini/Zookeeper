@@ -90,11 +90,13 @@ public class SendMessagesBank implements SendMessages {
 
 	public void sendUpdate(Client client, boolean isLeader) {
 		OperationBank operation = new OperationBank(OperationEnum.UPDATE_CLIENT, client);
+		if (isLeader) this.bank.handleReceiverMsg(operation);
 		sendMessage(operation, isLeader);
 	}
 
 	public void sendDelete(Integer accountNumber, boolean isLeader) {
 		OperationBank operation = new OperationBank(OperationEnum.DELETE_CLIENT, accountNumber);
+		if (isLeader) this.bank.handleReceiverMsg(operation);
 		sendMessage(operation, isLeader);
 	}
 
