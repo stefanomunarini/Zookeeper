@@ -38,7 +38,7 @@ public class ElectionManager {
 
     public void leaderElection() throws KeeperException, InterruptedException {
 
-        List<String> nodes = zk.getChildren(ElectionManager.rootElection, false);
+        List<String> nodes = zk.getChildren(rootElection, false);
         int r = new Random().nextInt(100);
         // Loop for rand iterations
         // to wait that a few nodes join
@@ -54,28 +54,22 @@ public class ElectionManager {
         String leader = nodes.get(0);
         this.bank.setLeader(leader);
         System.out.println("Leader name: " + leader);
-        if(leader.equals(this.bank.getElectionNodeName().replace(ElectionManager.rootElection + "/", ""))){
+        if(leader.equals(this.bank.getElectionNodeName().replace(rootElection + "/", ""))){
             this.bank.setIsLeader(true);
             System.out.println("****You are the leader****");
         } else {
             this.bank.setIsLeader(false);
             System.out.println("The process " + leader + " is the leader");
-        }
-
-        if (this.bank.getIsLeader()) {
-            this.bank.sendCreateBank();
-        } else {
-            listenForElectionUpdates();
+            listenForLeaderNode(leader);
         }
     }
 
-    public void listenForElectionUpdates(){
-        ElectionWatcher electionWatcher = new ElectionWatcher(this.bank, this);
+    private void listenForLeaderNode(String leaderNode){
+        ElectionWatcher electionWatcher = new ElectionWatcher(this);
         try {
-            zk.getChildren(rootElection, electionWatcher);
-        } catch (KeeperException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+//            Thread.sleep(1000);
+            zk.exists(rootElection + "/" + leaderNode, electionWatcher);
+        } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
         }
     }

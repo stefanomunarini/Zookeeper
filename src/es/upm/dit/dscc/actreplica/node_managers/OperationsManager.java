@@ -23,7 +23,7 @@ public class OperationsManager {
         this.zk = zkInstance;
     }
 
-    public String createOperationsNode(String electionNodeName) throws KeeperException, InterruptedException {
+    public String createOperationsNode() throws KeeperException, InterruptedException {
 
         NodeUtils.znodeExistsOrCreate(zk, rootOperations, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.PERSISTENT);
@@ -38,9 +38,7 @@ public class OperationsManager {
         OperationWatcher operationWatcher = new OperationWatcher(this.zk, nodeName, bankInstance);
         try {
             this.zk.getChildren(nodeName, operationWatcher);
-        } catch (KeeperException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
         }
     }

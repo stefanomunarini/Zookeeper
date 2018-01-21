@@ -7,27 +7,25 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
 /**
- * Created by Stefano on 20/01/2018.
+ * A watcher class for the /election znode.
+ * This watcher is triggered when the leader node fails
+ * or exits. A new election is then triggered.
  */
 public class ElectionWatcher implements Watcher {
 
-    Bank bank;
-    ElectionManager electionManager;
+    private ElectionManager electionManager;
 
-    public ElectionWatcher(Bank bankInstance, ElectionManager electionManager){
-        this.bank = bankInstance;
+    public ElectionWatcher(ElectionManager electionManager){
         this.electionManager = electionManager;
     }
 
     @Override
     public void process(WatchedEvent event) {
-        System.err.println("ElectionWatcher process event ---> " + event.getType());
+        System.err.println("New election");
 
         try {
             electionManager.leaderElection();
-        } catch (KeeperException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
         }
     }

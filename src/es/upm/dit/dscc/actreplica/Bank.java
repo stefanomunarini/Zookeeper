@@ -31,10 +31,10 @@ public class Bank {
 		this.electionNodeName = electionManager.createElectionNode();
 
 		operationsManager = new OperationsManager(zk);
-		this.operationNodeName = operationsManager.createOperationsNode(this.electionNodeName);
+		this.operationNodeName = operationsManager.createOperationsNode();
 
 		// We set as data for the electionNodeName the operationNodeName.
-		// I this way we know who is the leader and its operationNodeName, so that followers
+		// In this way we know who is the leader and its operationNodeName, so that followers
 		// can forward the operations to the leader (which will then dispatch them to everyone).
 		Stat stat = new Stat();
 		zk.setData(this.electionNodeName, this.operationNodeName.getBytes(), stat.getVersion());
