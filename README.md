@@ -32,6 +32,6 @@ To achieve consistency, in fact, all the application servers need to execute the
 The strategy for ensuring consistency is as follow:
 1. Read operations: when a read operation is sent to any node (being it a leader node or a simple node), it is processed by the node itself;
 2. Write operations: when a write operation is received by an application server, we distinguish two cases:
-⋅⋅1. the operation is received by the leader: the application server executes it and forwards it to all the other nodes;
-⋅⋅2. the operation is received by a non leader node: the operation is forwarded from this node to the leader, which will execute it and, then, forward it to all the other nodes.
+   1. the operation is received by the leader: the application server executes it and forwards it to all the other nodes;
+   2. the operation is received by a non leader node: the operation is forwarded from this node to the leader, which will execute it and, then, forward it to all the other nodes.
 
