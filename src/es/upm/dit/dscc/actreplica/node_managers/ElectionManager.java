@@ -3,12 +3,14 @@ package es.upm.dit.dscc.actreplica.node_managers;
 import es.upm.dit.dscc.actreplica.Bank;
 import es.upm.dit.dscc.actreplica.utils.NodeUtils;
 import es.upm.dit.dscc.actreplica.watchers.ElectionWatcher;
+import es.upm.dit.dscc.actreplica.watchers.NodeDownWatcher;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -20,7 +22,8 @@ public class ElectionManager {
     private ZooKeeper zk;
     private Bank bank;
 
-    public static String rootElection = "/election";
+    public static String root = "/election";
+    private String prefix = "node-";
 
     public ElectionManager(ZooKeeper zkInstance, Bank bankInstance){
         this.zk = zkInstance;
@@ -29,16 +32,16 @@ public class ElectionManager {
 
     public String createElectionNode() throws KeeperException, InterruptedException {
 
-        NodeUtils.znodeExistsOrCreate(zk, rootElection, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        NodeUtils.znodeExistsOrCreate(zk, root, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 
-        return NodeUtils.znodeExistsOrCreate(zk, rootElection + "/n_", new byte[0],
+        return NodeUtils.znodeExistsOrCreate(zk, root + "/" + prefix, new byte[0],
                 ZooDefs.Ids.OPEN_ACL_UNSAFE,
                 CreateMode.EPHEMERAL_SEQUENTIAL);
     }
 
     public void leaderElection() throws KeeperException, InterruptedException {
 
-        List<String> nodes = zk.getChildren(rootElection, false);
+        List<String> nodes = zk.getChildren(root, false);
         int r = new Random().nextInt(100);
         // Loop for rand iterations
         // to wait that a few nodes join
@@ -53,10 +56,18 @@ public class ElectionManager {
         Collections.sort(nodes);
         String leader = nodes.get(0);
         this.bank.setLeader(leader);
-        System.out.println("Leader name: " + leader);
-        if(leader.equals(this.bank.getElectionNodeName().replace(rootElection + "/", ""))){
+        if(leader.equals(this.bank.getElectionNodeName().replace(root + "/", ""))){
             this.bank.setIsLeader(true);
             System.out.println("****You are the leader****");
+
+//            this.bank.sendCreateBank();
+
+            NodeDownWatcher nodeDownWatcher = new NodeDownWatcher();
+            for (String node_id : nodes) {
+                System.out.println("Node id: " + root + "/" + node_id);
+                zk.exists(root + "/" + node_id, nodeDownWatcher);
+            }
+
         } else {
             this.bank.setIsLeader(false);
             System.out.println("The process " + leader + " is the leader");
@@ -67,8 +78,7 @@ public class ElectionManager {
     private void listenForLeaderNode(String leaderNode){
         ElectionWatcher electionWatcher = new ElectionWatcher(this);
         try {
-//            Thread.sleep(1000);
-            zk.exists(rootElection + "/" + leaderNode, electionWatcher);
+            zk.exists(root + "/" + leaderNode, electionWatcher);
         } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
         }

@@ -4,7 +4,6 @@ import es.upm.dit.dscc.actreplica.node_managers.ElectionManager;
 import es.upm.dit.dscc.actreplica.node_managers.OperationsManager;
 import es.upm.dit.dscc.actreplica.utils.NodeUtils;
 import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +37,7 @@ public class SendMessagesBank implements SendMessages {
 		}
 
 		// Get leader operationNodeName which is stored as data in the electionNodeName of the leader
-		String leaderElectionNodeName = ElectionManager.rootElection + "/" + this.bank.getLeader();
+		String leaderElectionNodeName = ElectionManager.root + "/" + this.bank.getLeader();
 		try {
 			String leaderOperationNodeName = NodeUtils.getLeaderOperationNodeName(zk, leaderElectionNodeName);
 			zk.create(leaderOperationNodeName + "/", operationBytes,
@@ -48,13 +47,33 @@ public class SendMessagesBank implements SendMessages {
 		}
 	}
 
+	public void forwardOperationToNode(OperationBank operation, String nodePath) {
+
+		System.out.println("FOward to node: " + nodePath);
+
+		byte[] operationBytes = new byte[0];
+		try {
+			operationBytes = OperationBank.objToByte(operation);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			zk.create(nodePath + "/", operationBytes,
+					ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+		} catch (KeeperException | InterruptedException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public void forwardOperationToFollowers(OperationBank operation) {
 
-		System.out.println("forwardOperationToFollowers");
+		System.out.println("forwardOperationToFollowers: " + operation);
 
 		List<String> operationNodes = null;
 		try {
-			operationNodes = zk.getChildren(OperationsManager.rootOperations, false);
+			operationNodes = zk.getChildren(OperationsManager.root, false);
 		} catch (KeeperException | InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -69,11 +88,11 @@ public class SendMessagesBank implements SendMessages {
 			String operation_node_id = (String) iterator.next();
 
 			// Do not send the update to the leader (itself) again
-			String leaderElectionNodeName = ElectionManager.rootElection + "/" + this.bank.getLeader();
+			String leaderElectionNodeName = ElectionManager.root + "/" + this.bank.getLeader();
 			try {
 				String leaderOperationNodeName = NodeUtils.getLeaderOperationNodeName(zk, leaderElectionNodeName);
 				if (!operation_node_id.equals(leaderOperationNodeName)) {
-					zk.create(OperationsManager.rootOperations + "/" + operation_node_id + "/", operationBytes,
+					zk.create(OperationsManager.root + "/" + operation_node_id + "/", operationBytes,
 							ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 				}
 			} catch (KeeperException | InterruptedException | UnsupportedEncodingException e) {

@@ -27,11 +27,7 @@ public class MainBank {
 		bank = new Bank(this.zk);
 		initMembers(bank);
 
-		// TODO this enables FAULT DETECTION, but we need to provide something better
-		new zkMember(this.zk);
-
 		listenForCommands(args);
-
 	}
 
 	private void listenForCommands(String[] args) {
@@ -103,6 +99,7 @@ public class MainBank {
 						break;
 					case 5: // Get bank DB
 						System.out.println(bank.toString());
+//						bank.sendCreateBank();
 						break;
 					case 6:
 						exit = true;
@@ -122,7 +119,7 @@ public class MainBank {
 		String name   = null;
 		int balance   = 0;
 
-		System. out .print(">>> Enter account number (int) = ");
+		System.out.print(">>> Enter account number (int) = ");
 		if (sc.hasNextInt()) {
 			accNumber = sc.nextInt();
 		} else {
@@ -131,10 +128,10 @@ public class MainBank {
 			return null;
 		}
 
-		System. out .print(">>> Enter name (String) = ");
+		System.out.print(">>> Enter name (String) = ");
 		name = sc.next();
 
-		System. out .print(">>> Enter balance (int) = ");
+		System.out.print(">>> Enter balance (int) = ");
 		if (sc.hasNextInt()) {
 			balance = sc.nextInt();
 		} else {

@@ -1,12 +1,21 @@
 package es.upm.dit.dscc.actreplica;
 
 import es.upm.dit.dscc.actreplica.node_managers.ElectionManager;
+import es.upm.dit.dscc.actreplica.node_managers.MembersManager;
 import es.upm.dit.dscc.actreplica.node_managers.OperationsManager;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 public class Bank {
+
+	public ClientDB getClientDB() {
+		return clientDB;
+	}
+
+	public void setClientDB(ClientDB clientDB) {
+		this.clientDB = clientDB;
+	}
 
 	private ClientDB clientDB;
 	public SendMessagesBank sendMessages;
@@ -16,13 +25,16 @@ public class Bank {
 	private String leader;
 
 	// Operations
-	OperationsManager operationsManager;
-	private String operationNodeName; // /operations/0000000064
+	private OperationsManager operationsManager;
+	public String operationNodeName; // /operations/0000000064
 
 	// Election
-	public ElectionManager electionManager;
+	private ElectionManager electionManager;
 	private String electionNodeName; // /elections/n_0000000096
 	private boolean isLeader = false;
+
+	private MembersManager membersManager;
+	private String membersNodeName;
 
 	public Bank(ZooKeeper zk) throws KeeperException, InterruptedException {
 		this.zk = zk;
@@ -33,19 +45,31 @@ public class Bank {
 		operationsManager = new OperationsManager(zk);
 		this.operationNodeName = operationsManager.createOperationsNode();
 
-		// We set as data for the electionNodeName the operationNodeName.
-		// In this way we know who is the leader and its operationNodeName, so that followers
-		// can forward the operations to the leader (which will then dispatch them to everyone).
+		membersManager = new MembersManager(zk, this);
+		this.membersNodeName = membersManager.createBaseNodes();
 		Stat stat = new Stat();
-		zk.setData(this.electionNodeName, this.operationNodeName.getBytes(), stat.getVersion());
+		// We set as data for the membersNodeName the operationNodeName so when a new node
+		// joins (detected cause a new process joins the members node) we can send the
+		// current state (db) as a new operation for that node
+		zk.setData(membersNodeName, this.operationNodeName.getBytes(), stat.getVersion());
 
-		this.sendMessages = new SendMessagesBank(zk, this);
+		Thread.sleep(1000);
+
 		this.clientDB = new ClientDB();
 
 		// these has to be after the clientDb has been created
 		electionManager.leaderElection();
+		membersManager.listenForFollowingNode(membersNodeName);
 		// Set a watcher for operations
 		operationsManager.listenForOperationUpdates(this, this.operationNodeName);
+
+		// We set as data for the electionNodeName the operationNodeName.
+		// In this way we know who is the leader and its operationNodeName, so that followers
+		// can forward the operations to the leader (which will then dispatch them to everyone).
+		stat = new Stat();
+		zk.setData(this.electionNodeName, this.operationNodeName.getBytes(), stat.getVersion());
+
+		this.sendMessages = new SendMessagesBank(zk, this);
 	}
 
 	public synchronized void handleReceiverMsg(OperationBank operation) {
@@ -64,8 +88,6 @@ public class Bank {
 				clientDB.deleteClient(operation.getAccountNumber());
 				break;
 			case CREATE_BANK:
-				System.out.println("Received CREATE_BANK");
-
 				clientDB.createBank(operation.getClientDB());
 				break;
 		}

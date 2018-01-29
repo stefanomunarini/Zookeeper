@@ -10,9 +10,6 @@ public class OperationBank implements Serializable {
 	private Integer       accountNumber = 0;
 	private ClientDB      clientDB      = null;
 	
-	// When the node is going to be sent, the node must include the channel equal to null.
-	// The relevant should be the address
-	
    // ADD_CLIENT, UPDATE_CLIENT
 	public OperationBank (OperationEnum operation,
 			            Client client) {
@@ -75,6 +72,8 @@ public class OperationBank implements Serializable {
 		if (client != null) string = string + ", client=" + client.toString();
 		string = string + ", accountNumber=" + accountNumber + "]\n";
 		if (clientDB != null) string = string + clientDB.toString();
+
+		System.out.println("toString: " + string);
 		
 		return string;
 	}

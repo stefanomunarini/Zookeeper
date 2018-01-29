@@ -21,8 +21,6 @@ public class ElectionWatcher implements Watcher {
 
     @Override
     public void process(WatchedEvent event) {
-        System.err.println("New election");
-
         try {
             electionManager.leaderElection();
         } catch (KeeperException | InterruptedException e) {

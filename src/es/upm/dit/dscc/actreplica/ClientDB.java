@@ -6,10 +6,10 @@ public class ClientDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private java.util.HashMap <Integer, Client> clientDB;
+	public java.util.HashMap <Integer, Client> clientDB;
 
 	public ClientDB() {
-		clientDB = new java.util.HashMap <Integer, Client>();
+		clientDB = new java.util.HashMap<>();
 	}
 
 	public java.util.HashMap <Integer, Client> getClientDB() {
@@ -54,13 +54,12 @@ public class ClientDB implements Serializable {
 	}
 
 	public boolean createBank(ClientDB clientDB) {
-		System.out.println("clientDB createBank");
 		this.clientDB = clientDB.getClientDB();
 		return true;
 	}
 	
 	public String toString() {
-		String aux = new String();
+		String aux = "";
 
 		for (java.util.HashMap.Entry <Integer, Client>  entry : clientDB.entrySet()) {
 			aux = aux + entry.getValue().toString() + "\n";
