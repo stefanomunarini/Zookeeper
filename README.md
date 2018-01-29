@@ -15,17 +15,17 @@ In the above image it can be seen the structure of the Zookeeper ensemble. Under
 
 #### Election Node
 
-The Election node is used to register all the application servers which are part of the cluster. Everytime a new application server is started, an EPHEMERAL_SEQUENTIAL node is created under the root election node (/election). This mechanism enable to perform operations such as Leader election amongst all the nodes.
+The Election node is used to register all the application servers which are part of the cluster. Everytime a new application server is started, an EPHEMERAL_SEQUENTIAL (3) node is created under the root election node (/election). This mechanism enable to perform operations such as Leader election amongst all the nodes.
 
 The algorithm used for choosing the leader amongst all the application servers is very simple: the node with the lowest id will be elected as leader.
 
 #### Members Node
 
-The Members node is used to enforce Fault Detection. As previously described for the Election Node, everytime that an application server joins the cluster, an EPHEMERAL_SEQUENTIAL node is created under the members node (/members). Everytime that a new member joins the Members node, a watch that check its existance is set. This watch will be triggered if/when the node goes down (either crashed, or gets stopped). The watcher process is responsible for starting a new application server, thus ensuring fault detection and automatic recovery.
+The Members node is used to enforce Fault Detection. As previously described for the Election Node, everytime that an application server joins the cluster, an EPHEMERAL_SEQUENTIAL (3) node is created under the members node (/members). Everytime that a new member joins the Members node, a watch that check its existance is set. This watch will be triggered if/when the node goes down (either crashed, or gets stopped). The watcher process is responsible for starting a new application server, thus ensuring fault detection and automatic recovery.
 
 #### Operations Node
 
-The Operations node is used to enforce the consistency of the cluster. As above, everytime that an application server joins the cluster, a PERSISTENT_SEQUENTIAL node is created under the operations node (/operation). This node is set to be PERSISTENT because numerous sub-nodes will be created under each application server operation's node, one for each operation to be executed.
+The Operations node is used to enforce the consistency of the cluster. As above, everytime that an application server joins the cluster, a PERSISTENT_SEQUENTIAL (3) node is created under the operations node (/operation). This node is set to be PERSISTENT because numerous sub-nodes (4) will be created under each application server operation's node, one for each operation to be executed.
 
 To achieve consistency, in fact, all the application servers need to execute the same set of operations.
 
