@@ -5,11 +5,11 @@ A simple bank management system which uses Zookeeper for ensuring consistency, a
 
 The aim of the project is to create a simple distributed bank system made of application servers connected to a Zookeeper ensemble (or standalone if locally). Client requests (in this case STDIN commands) can be sent to any application server. In case the request is sent to the leader elected amongst the application servers, the request is processed by that server and sent forwarded to all the other applications servers. In case of a request sent to a non-leader application server, however, there are 2 cases: *_read_* requests are processed by the application server itself; *_create_*, *_update_* and *_delete_* requests are forwarded to the application server leader, which processes it and, when terminated, forwarded to all the other application servers.
 
-# Communication
+## Communication
 
 Communications never happen directly between application servers. Each of the application server is connected to a Zookeper ensemble which functions like a service bus.
 
-![](images/znodes.png?raw=true)
+![Zookeeper Ensemble](images/znodes.png?raw=true)
 
 In the above image it can be seen the structure of the Zookeeper ensemble. Under the root node "/" (1) several nodes are created (2): an election node, a members node and an operation node. All of these nodes are PERSISTENT, meaning that they are not associated with the current session and, therefore, are never deleted.
 
@@ -35,3 +35,17 @@ The strategy for ensuring consistency is as follow:
    1. the operation is received by the leader: the application server executes it and forwards it to all the other nodes;
    2. the operation is received by a non leader node: the operation is forwarded from this node to the leader, which will execute it and, then, forward it to all the other nodes.
 
+## Application Servers
+
+The application servers are really simple Java application. The database is made of a HashMap data structures, which stores information abour customers (account id, owner and current balance). The operations provided by the application are the standard CRUD (Creata, Read, Update, Delete).
+
+The application can be run from the command line, providing a basic UI which allows to execute the above-mentioned operations. To run it from the command line
+
+## Dependencies
+
+This project depends on 3 libraries:
+1. [zookeeper-3.4.10](https://repo1.maven.org/maven2/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar)
+2. [slf4j-simple](https://mvnrepository.com/artifact/org.slf4j/slf4j-simple/1.7.25)
+3. [slf4j-api](https://mvnrepository.com/artifact/org.slf4j/slf4j-api/1.7.25)
+
+These dependecies can be downloaded and imported manually into the project (e.g. for development).
