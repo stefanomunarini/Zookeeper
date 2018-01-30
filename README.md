@@ -1,5 +1,5 @@
 # Zookeeper
-A simple bank management system which uses Zookeeper for ensuring consistency, availability and fault tolerance
+A simple distributed bank management system which uses Zookeeper for ensuring consistency, availability and fault tolerance.
 
 ## Aim
 
