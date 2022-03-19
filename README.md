@@ -1,9 +1,9 @@
 # Zookeeper
-A simple distributed bank management system which uses Zookeeper for ensuring consistency, availability and fault tolerance.
+A simple distributed bank management system which uses Zookeeper to ensure consistency, availability and fault tolerance.
 
 ## Aim
 
-The aim of the project is to create a simple distributed bank system made of application servers connected to a Zookeeper ensemble (or standalone if locally). Client requests (in this case STDIN commands) can be sent to any application server. In case the request is sent to the leader elected amongst the application servers, the request is processed by that server and forwarded to all the other applications servers. In case of a request sent to a non-leader application server, however, there are 2 cases: *_read_* requests are processed by the application server itself; *_create_*, *_update_* and *_delete_* requests are forwarded to the application server leader, which processes it and, when terminated, forwarded to all the other application servers.
+The aim of this project is to create a simple distributed bank system made of application servers connected to a Zookeeper ensemble (or standalone if locally). Client requests (in this case STDIN commands) can be sent to any application server. In case the request is sent to the leader elected amongst the application servers, the request is processed by that server and forwarded to all the other applications servers. In case of a request sent to a non-leader application server, however, there are 2 cases: *_read_* requests are processed by the application server itself; *_create_*, *_update_* and *_delete_* requests are forwarded to the application server leader, which processes it and, when terminated, forwards them to all the other application servers.
 
 ## Dependencies
 
